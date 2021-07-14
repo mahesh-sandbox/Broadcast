@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block content %}
+  
+  <div class="container">
+    <div class="jumbotron">
+      <h3 style="text-align: center;">Upload New Video</h3> 
+      </div>
+  </div>
+  <div class="container" style="background-color: #2d3033; color: white;">
+    <form>
+      <div class="form-group">
+        <label for="title" style="font-weight: bold;font-size:15px;">Title</label>
+        <input type="text" style="color: white;" class="form-control" id="title" maxlength="50" placeholder="Enter video title">
+      </div>
+      <div class="form-group">
+        <label for="title" style="font-weight: bold;font-size:15px;">Video URL &nbsp;&nbsp;&nbsp;&nbsp;<img src="static/img/helpicon.png" data-toggle="modal" data-target="#helperModal" style="width:25px;height:25px;"/></label>
+        <input type="text" style="color: white;" class="form-control" id="url" aria-describedby="urlHelp" placeholder="Enter video URL link from Google drive">
+        <small id="urlHelp" class="form-text text-muted">We'll never share this URL with anyone else. End to End encrypted for security.</small>
+      </div>
+      <br>
+      <button id="button" type="button" onclick="showPreview()" class="btn btn-primary">Preview</button>
+      <div id="previewDiv" style="display:none;">
+      <br><br>
+        <iframe
+          id = "previewFrame"
+          src=""
+          width="640"
+          height="480"
+          allow="autoplay"
+      ></iframe>
+      </div>
+      <br><br>
+      <div class="form-group">
+        <label for="description" style="font-weight: bold;font-size:15px;">Description</label>
+        <textarea class="form-control" style="color: white;" id="description" rows="5" maxlength="1000" placeholder="Enter video description. 1000 characters max."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="userList" style="font-weight: bold;font-size:15px;">Add Watchers</label>
+        <input type="email" class="form-control" style="color: white;" id="userList" value="" list="users" oninput="parseInput()" placeholder="Enter the user email address (comma separated). Type few characters to get suggestions .." multiple>      
+        <datalist id="users" style="background-color: #2d3033;">
+        </datalist>
+      </div>
+    </form>
+    <br>
+    <p style="font-weight: bold;font-size:15px;">
+      <span id=uploadresult></span>
+    <br>
+    <div>
+        <a href=# id=upload class="btn btn-success">UPLOAD</a><br>
+    </div>
+    <br><br>
+    <br><br>
+  </div>
+
+  <div id="helperModal" class="modal fade" role="dialog" >
+    <div class="modal-dialog" style="width:1000px; height:1000px !important;">
+      <!-- Modal content-->
+      <div class="modal-content" style="font-size: 25px; color: black; margin: 10px;">
+        <div class="modal-body">
+          <p>Steps to get the video URL from Google drive</p>
+          <p>1. Login to Google drive</p>
+          <p>2. Navigate to the folder having the video file that you want to upload</p>
+          <p>3. Right-click on the file and click "Get link"</p>
+          <p><img src="static/img/meet1.png" style="width:900px;height:500px;"/></p>
+          <p>4. Click "copy link"</p>
+          <p><img src="static/img/meet2.png" style="width:900px;height:500px;"/></p>
+        </div>
+        <div class="modal-footer" style="text-align: left;">
+          <div style="text-align: center;">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+          </div>  
+          </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    
+    function parseInput() {
+      var name = document.getElementById("userList").value;
+      document.getElementById("userList").value =  name.split('(')[0];
+      }
+
+    function showPreview() {
+      document.getElementById('previewDiv').style.display = "block";
+      let url = document.getElementById('url');
+      var preview_url = url.value.replace("view?usp=sharing", "preview");
+      document.getElementById('previewFrame').src = preview_url;
+      }
+
+    window.onload = function() {
+      $.getJSON('/setallusers',
+          function(data) {
+            console.log(data);
+          });
+      };
+
+    $(function(){ // this will be called when the DOM is ready
+        $('#userList').keyup(function() {
+          var emp_name = $('#userList').val();
+          var search_name = emp_name.substring(emp_name.lastIndexOf(',') + 1);
+          if (search_name.length > 3) {
+            $.getJSON('/search_users', json={
+              search_key : search_name,
+              },
+              function(data) {
+                $('#users').html('');
+                for(i=0; i<data.length; i++)
+                  {
+                    $('#users').append('<option value='+data[i]+' />');
+                  }
+            });
+          }
+        });
+
+        $('a#upload').bind('click', function() {
+          let btn_text = document.getElementById("upload").innerHTML;
+          if (btn_text == 'UPLOAD ANOTHER VIDEO'){ // reset the form.
+            document.getElementById('title').removeAttribute("readonly");
+            document.getElementById('url').removeAttribute("readonly");
+            document.getElementById('description').removeAttribute("readonly");
+            document.getElementById('userList').removeAttribute("readonly");
+            document.getElementById('title').value = '';
+            document.getElementById('url').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('userList').value = '';
+            document.getElementById("upload").innerHTML = 'UPLOAD';
+            $("#uploadresult").text('');
+          } 
+          else{
+            let title = document.getElementById('title').value;
+            let url = document.getElementById('url').value;
+            let desc = document.getElementById('description').value;
+            let users = document.getElementById('userList').value;
+            let allowSave = true;
+
+            if (title.length == 0){
+              document.getElementById('title').style.background = 'Yellow';
+              allowSave = false;
+            } else{
+              document.getElementById('title').style.background = '#2d3033';
+            }
+            if (url.length == 0){
+              document.getElementById('url').style.background = 'Yellow';
+              allowSave = false;
+            }else{
+              document.getElementById('url').style.background = '#2d3033';
+            }
+            if (description.length == 0){
+              document.getElementById('description').style.background = 'Yellow';
+              allowSave = false;
+            }else{
+              document.getElementById('description').style.background = '#2d3033';
+            }
+            if (userList.length == 0){
+              document.getElementById('userList').style.background = 'Yellow';
+              allowSave = false;
+            }else{
+              document.getElementById('userList').style.background = '#2d3033';
+            }
+
+            if (allowSave == true){
+              $("#uploadresult").text('Uploading video. Please wait.. ');
+              $.getJSON('/uploadNewVideo', json={
+                title : title,
+                url : url,
+                description : desc,
+                users : users,
+              },
+              function(data) {
+                $("#uploadresult").text(data);
+                document.getElementById('title').setAttribute("readonly", "readonly");
+                document.getElementById('url').setAttribute("readonly", "readonly");
+                document.getElementById('description').setAttribute("readonly", "readonly");
+                document.getElementById('userList').setAttribute("readonly", "readonly");
+                document.getElementById("upload").innerHTML = 'UPLOAD ANOTHER VIDEO';
+              });
+            }
+          }
+        });
+      });
+  </script>
+{% endblock %}

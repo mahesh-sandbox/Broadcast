@@ -1,0 +1,17 @@
+{% block content %}
+{% for res in result %}
+  <div style="float: left; padding-left: 20px; pointer-events: auto;">
+    <div class="contain">
+      <div id = '{{ res[5] }}' class="center" onmouseover="showWatchOption('{{ res[5] }}')" onmouseout="hideWatchOption('{{ res[5] }}')" onclick="setFrameVideo('{{ res[1] }}','{{ res[2] }}')" data-toggle="modal" data-target="#playVideoModal">
+        <p>{{  res[0] }}</p>
+      </div>
+      <div class="overlay">Watch Video</div>
+    </div>
+    <div>
+      <p>Owner: {{ res[3] }}   upload Date: {{ res[4] }} </p>
+      <textarea id="description" rows="5" maxlength="1000" cols="62" style="border: none; resize: none; background-color: #2d3033; color: #ffffff;" readonly>{{ res[2] }} </textarea>
+    </div>  
+  </div>
+  &nbsp;&nbsp;
+{% endfor %}
+{% endblock %}

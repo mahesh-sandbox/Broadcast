@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+<style>
+
+.centerWindow {
+  margin: auto;
+  width: 90%;
+  padding: 10px;
+}
+
+  .center {
+  line-height: 250px;
+  height: 250px;
+  border: 3px solid green;
+  text-align: center;
+  background-color:#5bc0de;
+  width:450px;
+  max-width:450px; 
+  word-wrap:break-word;
+}
+
+.center p {
+  line-height: 1.5;
+  display: inline-block;
+  vertical-align: middle;
+  font-size:35px;
+}
+
+.contain {
+  position: relative;
+  /* width: 50%;
+  max-width: 300px; */
+  display: flex;
+  justify-content: space-between;
+}
+
+.overlay {
+  position: absolute; 
+  bottom: 0; 
+  background: rgb(0, 0, 0);
+  background: rgba(0, 0, 0, 0.5); /* Black see-through */
+  color: #f1f1f1; 
+  width: 100%;
+  transition: .5s ease;
+  opacity:0;
+  color: white;
+  font-size: 20px;
+  padding: 20px;
+  text-align: center;
+}
+
+.contain:hover .overlay {
+  opacity: 1;
+}
+
+.inline_block {
+display:inline-block;
+}
+
+</style>
+{% endblock %}
+{% block content %}
+<div class="centerWindow">
+  <div >
+    <form id="form" style="text-align: center;"> 
+      <input type="search" id="query" name="searchBar" onkeyup="searchVideo()" size="100" style="color: black; font-size: 20px;"  placeholder="Search...">
+    </form>
+  </div>
+  <br><br>
+  <div>
+    <div id="frames" style="padding-left: 50px;">
+      {% for res in result %}
+        <div style="float: left; padding-left: 20px; pointer-events: auto;">
+          <div class="contain">
+            <div id = '{{ res[5] }}' class="center" onmouseover="showWatchOption('{{ res[5] }}')" onmouseout="hideWatchOption('{{ res[5] }}')" onclick="setFrameVideo('{{ res[1] }}','{{ res[2] }}')" data-toggle="modal" data-target="#videoModal">
+              <p>{{  res[0] }}</p>
+            </div>
+            <div class="overlay">Watch Video</div>
+          </div>
+          <div>
+              <p>upload Date: {{ res[4] }} </p>
+            <div>
+              <button type="button" id=button1 class="btn btn-warning" onclick="setEditModal('{{ res[0] }} ','{{ res[1] }} ','{{ res[2] }} ','{{ res[5] }}')"data-toggle="modal" data-target="#editModal">Edit</button>
+              <button type="button" id=button2 class="btn btn-danger" onclick="setDeleteItem('{{ res[5] }} ')"  data-toggle="modal" data-target="#deleteModal">Delete</button>
+            </div>
+            <textarea id="description" rows="5" maxlength="1000" cols="62" style="border: none; resize: none; background-color: #2d3033; color: #ffffff;" readonly>{{ res[2] }} </textarea>
+          </div>  
+        </div>
+        &nbsp;&nbsp;
+        {% endfor %}
+    </div>
+  </div>
+</div>
+<!-- Modal -->
+<div id="videoModal" class="modal fade" role="dialog" >
+  <div class="modal-dialog" style="width:1000px; height:1000px !important;">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-body" style="padding: 0;" >
+        <iframe id = "videoFrame" src=""
+                width="1000"
+                height="600"
+        ></iframe>
+      </div>
+      <div class="modal-footer" style="text-align: left;">
+        <textarea id="modalDesc" rows="8" maxlength="1000" cols="130" style="border: none; resize: none; color: black; text-align: justify;" readonly></textarea>
+        <div style="text-align: center;">
+          <button type="button" class="btn btn-info" onclick="resetFrameVideo('https://drive.google.com/file/d/1UhWy7s3N8FahiusFIRtRUyM4kvcYKZU7/preview')" data-dismiss="modal">Close</button>
+        </div>  
+        </div>
+    </div>
+  </div>
+</div>
+<div id="deleteModal" class="modal fade" role="dialog" >
+  <div class="modal-dialog" style="width:1000px; height:1000px !important;">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-body" style="padding: 0;" >
+        <p style="font-size: 25px; color: black; margin: 10px;">Delete action will remove the video from Broadcast. However this will not delete the file from your Google drive. Click 'Yes' to continue or 'No' to cancel.</p>
+      </div>
+      <div class="modal-footer" style="text-align: left;">
+        <div style="text-align: center;">
+          <button type="button" id='deleteButton' value= "" class="btn btn-default" onclick="deleteVideo()" data-dismiss="modal">Yes</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+        </div>  
+        </div>
+    </div>
+  </div>
+</div>
+<div id="editModal" class="modal fade" role="dialog" >
+  <div class="modal-dialog" style="width:1000px; height:1000px !important;">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-body" style="padding: 10;" >
+        <div class="container">
+          <form class="form-horizontal">
+            <div class="form-group form-group-lg">
+              <div class="col-sm-10">
+                <label for="title" style="font-weight: bold;font-size:15px; color: rgb(0, 0, 0);">Title</label>
+                <input type="text" style="color: rgb(0, 0, 0);" class="form-control" id="title" maxlength="50" placeholder="Enter video title">
+              </div>    
+            </div>
+            <div class="form-group form-group-lg">
+              <div class="col-sm-10">
+                <label for="title" style="font-weight: bold;font-size:15px; color: rgb(0, 0, 0);">Video URL</label>
+                <input type="text" style="color: rgb(0, 0, 0);" class="form-control" id="url" aria-describedby="urlHelp" placeholder="Enter video URL" readonly>
+              </div>
+            </div>
+            <div class="form-group form-group-lg">
+              <div class="col-sm-10">
+                <label for="description" style="font-weight: bold;font-size:15px; color: rgb(0, 0, 0);">Description</label>
+                <textarea class="form-control" style="color: rgb(0, 0, 0);" id="desc" rows="5" maxlength="1000" placeholder="Enter video description. 1000 characters max."></textarea>
+              </div>
+            </div>
+            <div class="form-group form-group-lg">
+              <div class="col-sm-10">
+                <label for="userList" style="font-weight: bold;font-size:15px; color: rgb(0, 0, 0);">Add Users</label>
+                <input type="email" class="form-control" style="color: rgb(0, 0, 0);" id="userList" value="" list="users" placeholder="Enter the user email address (comma separated). Type few characters to get suggestions .." multiple>
+                <datalist id="users">
+                </datalist>
+              </div>
+            </div>
+          </form>
+          <br>
+          <p style="font-weight: bold;font-size:15px; color: rgb(0, 0, 0);">
+            <span id=saveresult></span>
+          <br>
+        </div>
+      </div>
+      
+      <div class="modal-footer" style="text-align: left;">
+        <div style="text-align: center;">
+          <button type="button" id='saveButton' value= "" class="btn btn-success" onclick="updateVideo()">Save</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+        </div>  
+      </div>
+    </div>
+  </div>
+</div>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" >
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script>
+
+  function searchVideo() {
+    var search_word = document.getElementById('query').value;
+    $.ajax({
+      type : 'POST',
+      url : "/searchmyvideo",
+      data: {key: search_word,},
+      success: function (res) { 
+        document.getElementById('frames').innerHTML = res;
+      }, 
+      error: function (error) { console.log(error) }
+    })
+  }
+
+  function setFrameVideo(val,desc) {
+    document.getElementById('videoFrame').src = val;
+    document.getElementById('modalDesc').value = desc;
+  }
+
+  function resetFrameVideo(val) {
+    document.getElementById('videoFrame').src = val;
+  }
+  function showWatchOption(val) {
+    document.getElementById(val).style.opacity = '0.5';
+    document.getElementById(val).style.cursor = 'pointer';
+  }
+
+  function hideWatchOption(val) {
+    document.getElementById(val).style.opacity = '1';
+  }
+  function setDeleteItem(val){
+    document.getElementById('deleteButton').value = val;
+  }
+
+  function setEditModal(title, url, desc, video_id){
+    document.getElementById('title').value = title;
+    document.getElementById('url').value = url;
+    document.getElementById('desc').value = desc;
+    document.getElementById('saveButton').value = video_id;
+    document.getElementById('title').style.background = 'white';
+    document.getElementById('url').style.background = 'white';
+    document.getElementById('desc').style.background = 'white';
+    $("#saveresult").text(' '); 
+
+    $.getJSON('/get_video_watcher_list', json={
+          video_id : video_id
+        },
+        function(data) {
+          document.getElementById('userList').value = data;
+        });
+
+    $.getJSON('/setallusers',
+        function(data) {
+          console.log('users set');
+        });
+  }
+
+  function updateVideo(){
+    let title = document.getElementById('title').value;
+    let url = document.getElementById('url').value;
+    let desc = document.getElementById('desc').value;
+    let users = document.getElementById('userList').value;
+    let video_id = document.getElementById('saveButton').value;
+    let allowSave = true;
+
+    if (title.length == 0){
+      document.getElementById('title').style.background = 'Yellow';
+      allowSave = false;
+    } else{
+      document.getElementById('title').style.background = 'white';
+    }
+    if (url.length == 0){
+      document.getElementById('url').style.background = 'Yellow';
+      allowSave = false;
+    }else{
+      document.getElementById('url').style.background = 'white';
+    }
+    if (desc.length == 0){
+      document.getElementById('desc').style.background = 'Yellow';
+      allowSave = false;
+    }else{
+      document.getElementById('desc').style.background = 'white';
+    }
+    if (userList.length == 0){
+      document.getElementById('userList').style.background = 'Yellow';
+      allowSave = false;
+    }else{
+      document.getElementById('userList').style.background = 'white';
+    }
+
+    if (allowSave == true){
+      $("#saveresult").text('Saving changes. Please wait.. ');
+      $.ajax({
+        type : 'POST',
+        url : "/updateVideo",
+        data: {title : title,
+                url : url,
+                desc : desc,
+                users : users,
+                video_id : video_id,},
+        success: function (res) { 
+          document.getElementById('frames').innerHTML = res;
+          $("#saveresult").text('Changes saved successfully.'); 
+        }, 
+        error: function (error) { console.log(error) }
+      })
+      }
+  }
+
+  function deleteVideo(){
+    let video_id = document.getElementById('deleteButton').value;
+    $.ajax({
+      type : 'POST',
+      url : "/deleteVideo",
+      data: {key: video_id,},
+      success: function (res) { 
+        document.getElementById('frames').innerHTML = res;
+      }, 
+      error: function (error) { console.log(error) }
+    })
+  }
+
+  $(function(){ // this will be called when the DOM is ready
+    $('#userList').keyup(function() {
+      var emp_name = $('#userList').val();
+      var search_name = emp_name.substring(emp_name.lastIndexOf(',') + 1);
+      if (search_name.length > 3) {
+        $.getJSON('/search_users', json={
+          search_key : search_name,
+          },
+          function(data) {
+            $('#users').html('');
+            for(i=0; i<data.length; i++)
+              {
+                  $('#users').append('<option value='+data[i]+' />');
+              }
+          });
+      }
+    });
+  });
+    
+  var searchBox = document.getElementById("query");
+  searchBox.addEventListener("keydown", function (e) {
+    if (e.code === "Enter") {  //checks whether the pressed key is "Enter"
+    e.preventDefault();  
+    sendData();
+    }
+  });
+</script>
+{% endblock %}
